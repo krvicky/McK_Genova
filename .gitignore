@@ -1,0 +1,11 @@
+# test output
+tests/out*/
+shots*/
+prof*/
+check.js
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
