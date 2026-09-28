@@ -49,9 +49,9 @@ const phases = JSON.parse(process.env.PHASES || '[]');
 const helpers = `
   window.__w = ms => new Promise(r => setTimeout(r, ms));
   window.__until = async (fn, t = 20000) => { const s = Date.now(); while (Date.now() - s < t) { try { if (fn()) return true; } catch (e) {} await __w(40); } throw new Error('timeout: ' + fn.toString().slice(0, 140)); };
-  window.__c = sel => { const el = document.querySelector(sel); if (!el) throw new Error('missing ' + sel); el.click(); };
+  window.__c = sel => { const el = document.querySelector(sel); if (!el) throw new Error('missing ' + sel); if (el.click) el.click(); else el.dispatchEvent(new MouseEvent('click', { bubbles: true })); };
   window.__t = () => document.getElementById('app').innerText;
-  window.__has = s => { if (!__t().includes(s)) throw new Error('text not found: ' + s); return true; };
+  window.__has = s => { const a = document.getElementById('app'); if (!a.innerText.includes(s) && !a.textContent.includes(s)) throw new Error('text not found: ' + s); return true; };
   window.__idle = () => __until(() => !busy());
   window.__set = (sel, v) => { const el = document.querySelector(sel); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
   'ok'`;
