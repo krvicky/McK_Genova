@@ -17,4 +17,4 @@ Optional environment variables:
 
 Expected output: every phase prints `PASS`, followed by `ERRORS: none` and `EXTERNAL REQUESTS: none`. Screenshots land in the output folder, which git ignores.
 
-Each block in `tests.js` starts with a `// ---- name` line and runs as one async phase. Helpers available in the page: `__c(selector)` clicks, `__has(text)` asserts visible text, `__set(selector, value)` fills a field, `__idle()` waits for simulated work to finish.
+The first phase signs in through the landing page and Okta chooser; later phases switch personas with `setPersona()` or `enter()`. Each block in `tests.js` starts with a `// ---- name` line and runs as one async phase. Helpers available in the page: `__c(selector)` clicks, `__has(text)` asserts visible text, `__set(selector, value)` fills a field, `__idle()` waits for simulated work to finish.
