@@ -24,7 +24,7 @@ Roles, not headcount: one person may hold several roles, but never proposes and 
 | Persona | Starts in | Does |
 |---|---|---|
 | Product Manager · Generics | Case Queue | Works cases (edit with reason codes, accept, approve and submit, re-run), authors rules, runs the sandbox, opens proposals and answers review comments |
-| Category Lead · Generics | Rule Tower · Proposals | Reviews, comments, requests changes, approves and merges proposals; approves golden-set promotions and rollbacks |
+| Category Lead · Generics | Rule Tower · Proposals › Awaiting me | Reviews, comments, requests changes, approves and merges proposals; approves golden-set promotions and rollbacks |
 | Genova Platform Owner | AI Ops | Second approval on Interpretive (prompt) changes and model-pin changes; owns cost, drift, consistency and reliability; approves triage fixes; sees the access log |
 
 Approvals: Governed, Deterministic and Reference changes need the Category Lead; Interpretive changes and model-pin changes need the Category Lead and the Platform Owner; a rollback needs one of them. The proposer's Approve button is always disabled ("Proposer cannot approve their own change").
@@ -37,27 +37,41 @@ Sign in from the landing page with **Sign in with Okta** → choose a persona ti
 |---|---|
 | `→` | Advance to the next step of the scripted happy path |
 | `D` | Show or hide the demo director panel |
-| `Esc` | Close popovers, drawers and dialogs |
-| `Alt+←` / `Alt+→` | Back and forward through every screen visited (also the arrows in the top bar) |
-| Director · Jump to | Queue, AI Ops, Case 0091 before edit / after re-run, audit logs (0091, 0098), rule map (coverage, dependency, Masters), AI boundaries, Proposals, Proposal CP-0014, or any Rule Tower scenario |
+| `Esc` | Close popovers and dialogs |
+| `Alt+←` / `Alt+→` | Back and forward through every screen, Rule Tower tab, selected rule and opened proposal (also the arrows in the top bar) |
+| `Ctrl+K` / `Cmd+K` | Open the rule picker anywhere in the Rule Tower (↑ ↓ move, Enter open, Esc close) |
+| Director · Jump to | Queue, AI Ops, Case 0091 before edit / after re-run, audit logs (0091, 0098), rule map (coverage, dependency, Masters), AI boundaries, Rule Tower · Overview as the current persona, Proposals, Open CP-0014 |
+| Director · Rule Tower scenarios | S0–S9 open Rules › {target rule} with the stepper at Describe and the text prefilled (S4 opens Manufacturer size) |
 | Director · Sign in as… | Switch to any persona without the verify step; **Back to landing page** signs out |
 | Director · Speed | Normal or Fast (Fast cuts simulated latencies, including Okta verify, by 70%) |
 | Director · Presenter zoom | 100%, 110% (default) or 125% for projector readability |
 | Director · Spotlight: next callout | Steps a spotlight through the key regions of the current screen; Alt+click spotlights any tile |
-| Director · toggles | Show trace panels, LLM lens, Scripted review comment |
+| Director · toggles | Scripted review comment |
+| Director · Queue | **Finish digitizing CASE-0097** (otherwise it finishes 60 s after the queue is first shown) and **Reset queue filters** |
 | Director · Approve case | Shortcut to the approved, locked state of CASE-0091 |
-| ✦ LLM lens (top bar) | Tints every place an LLM is involved and marks the controls an LLM never decides |
 | User chip (top right) | Switch persona (demo) or sign out |
 
 ## The scripted path
 
-Sign in as the Product Manager → Queue → CASE-0091 (25 of 34 fields ≥ 95%, expected corrections 2.0) → trust drill-down on MOQ (72%) → spot-audit and accept the 25 high-trust fields → edit MOQ to 1 with reason "Write-in overrides checkbox" → pattern suggestion card → Rule Tower (S1 prefilled, still the PM) → Interpret → Confirm → compiled rule → Checks → Golden sandbox → Replay → open change proposal CP-0014 → switch to the Category Lead → approve → Merge (MOQ v0.4) → switch to the Product Manager → Re-run (MOQ = 1 at 96%, 26/34, 1.7) → Approve & Submit (values locked, output checked 34/34) → switch to the Platform Owner → AI Ops.
+Sign in as the Product Manager → Queue → CASE-0091 (fields ready 25/34 · case confidence 94% · alert checks 8/9, lowest field MOQ 72%) → trust drill-down on MOQ (72%) → spot-audit and accept the 25 high-trust fields → edit MOQ to 1 with reason "Write-in overrides checkbox" → pattern suggestion card → Rules › MOQ with the stepper at Describe (S1 prefilled, still the PM) → Interpret → Confirm → Checks → Test (golden set, replay) → Submit: open change proposal CP-0014 → switch to the Category Lead → Proposals › Awaiting me → approve → Merge (MOQ v0.4) → switch to the Product Manager → Re-run (MOQ = 1 at 96% · fields ready 26/34 · case confidence 95% · lowest field Pallet Ti × Hi 76%) → Approve & Submit (values locked, output checked 34/34) → switch to the Platform Owner → AI Ops.
 
 With **Scripted review comment** on, the Category Lead first asks about illegible handwriting and requests changes; the Product Manager adds the fallback step, checks re-run, and the review completes.
 
 The audit-log clock is deterministic: scripted actions stamp their planned times (09:40:12 opened, 09:43:37 MOQ edit, …) so every rehearsal shows identical timestamps.
 
 Every step works by mouse, or by pressing `→` repeatedly; the `→` path hands off between personas with the short Okta verify.
+
+## Rule Tower layout
+
+Four tabs: **Overview · Rules · Proposals · Map**. The Rule Tower opens on Overview for every persona.
+
+- **Overview**: KPIs (rules live 31/34, open proposals, coverage gaps, accepted unchanged), persona-specific *Needs your attention* items, coverage gaps and recent changes.
+- **Rules**: a searchable rule picker (34 attribute rules + 4 lookups and prompts, with a pinned *Needs attention* group) and prev/next arrows. Each rule page has:
+  - a hero: status chips, the live rule as plain-language steps, **View logic ›** (JSON, compiled code, Run 100×), four health tiles and the PM correction nudge;
+  - the main column: *How it works* (inputs, golden cases, recent PM corrections), or the **Propose a change** stepper (Describe · Confirm · Checks · Test · Submit) with a persistent Current versus Proposed comparison;
+  - a right rail: approval flow (only with a draft or proposal), versions (Compare and Revert on hover) and dependencies.
+- **Proposals**: Awaiting me · My proposals · All. A proposal page has the same skeleton: hero with the persona's primary action, Changes / Checks / Conversation, and a rail with the approval flow, versions and impact. CP-0012 (INFOREM, changes requested) and CP-0013 (Storage temperature, awaiting the Platform Owner) are live and can be answered, approved and merged.
+- **Map**: coverage and dependency lenses. Clicking an attribute opens its rule page.
 
 ## Rule Tower scenarios
 
@@ -78,13 +92,35 @@ The LLM is **simulated**: every interpretation comes from preconfigured scenario
 
 Recommended live path: S1 (via the PM hand-off) → S2 → S5 or S6. The others are for Q&A. Each of S1–S8 ends in a change proposal (CP-0014 onwards); S6 raises a change request instead, and S9 creates nothing but a security event.
 
+## Case queue
+
+The Product Manager's start screen, **Item setup case queue**. Times derive from the demo clock (`DEMO_DATE`, today 10:00); SLA time left is computed from each case's stored due time.
+
+- **Four statuses:** Digitizing · Needs action · Ready to approve (all fields ≥ 95% and all 9 alert checks passed) · Done (submitted or closed). A muted second line shows the digitizing step, an intake problem, "Follows CASE-0096", or the outcome.
+- **Tiles:** Needs action 6 · Ready to approve 3 · Digitizing 2 · Done 17 by default. They follow the Received and Supplier filters, and clicking one filters the table.
+- **Filters:** search (case ID, NDC, supplier), Open / Done / All tabs with counts, Received (Today, Last 7 days, Last 30 days, This month), Supplier, and the chips SLA at risk, Failed alert checks and Low confidence (combined with AND). Case, SLA and Case confidence headers sort.
+- **Safeguard:** a time filter never silently hides open work. Open cases received before the period raise a notice; **Show** adds them with an "Outside period" chip (CASE-0068 by default).
+- **Columns:** Fields ready (fields ≥ 95% across all NDCs), Case confidence (simple average of all scored fields), Lowest field (opens the case on that field), Alert checks (hover card lists all 9, failures open the case on the related field), Download, Open case.
+- **Closing a case:** Close case (in any open case) takes a reason: Duplicate NDC, More info requested from supplier, Not a new item, Wrong category, Supplier withdrew. There is no "waiting on supplier": the supplier's reply arrives as a new, linked case (CASE-0096 → CASE-0100). CASE-0098's resubmission request closes it with "More info requested from supplier".
+- **Case pages:** CASE-0091 and CASE-0098 have their full walkthrough views; every other case opens a read-only summary with its per-NDC fields, scores, failed checks and audit log. Done cases open on the audit log.
+
+## Excel downloads
+
+Submitted cases download the **approved output**; Ready and Needs action cases (with digitized fields) download a **draft**. Files are Excel 2003 XML Spreadsheets (`.xls`, generated in the browser; Excel may warn about the format), named like `CASE-0091_Xiromed_APPROVED.xls`:
+
+- **Item setup:** header block (case, supplier, NDC count, received, exported by the current persona, then the approval line with checksum, or a red **DRAFT – NOT APPROVED** row), then one row per NDC with the 34 attributes.
+- **Evidence:** one row per NDC × attribute with group, value, confidence, field type, source, rule and version, and PM edits.
+- **Alert checks:** one row per NDC × check with result and detail.
+
+CASE-0091 exports its live values (edits, re-run, approval); other cases use deterministic synthetic values that reproduce their queue numbers exactly. Every download adds an audit event with the persona's role.
+
 ## What else is in the demo
 
 - **Calibrated trust score:** each field shows a probability that its value is correct, calibrated on PM decisions (weighted geometric mean of OCR, LLM, rule, lookup and cross-check signals → calibration curve v5). Bands: ≥ 95 good to accept, 80–94 review, < 80 escalate.
 - **Execution tags:** every field is tagged Static, Direct, Lookup, Interpretive (LLM step) or Derived (code); 29 of 34 fields use no LLM at runtime.
 - **Audit log:** a hash-chained timeline per case with field lineage, filters and JSON/CSV export; live actions append as they happen.
 - **Proposals and versions:** rule changes go through propose → review → merge, with separation of duties, tier-based approvals, three-layer diffs, version history with case counts, and one-approval reverts.
-- **Rule map:** coverage and dependency lenses, seeded gaps, and an illustrative Masters inheritance view.
+- **Rule map:** coverage and dependency views, seeded gaps, and an illustrative Masters inheritance view.
 - **AI boundaries:** what the LLM does, what runs without an LLM, and what an LLM must never decide.
 - **CASE-0098:** a failed intake handled loudly (retries, dead-letter, routed to the PM).
 - **AI Ops:** cost panel, reliability, consistency monitor, drift, autonomy ladder, gateway trace, triage and (for the Platform Owner) the Okta access log.
