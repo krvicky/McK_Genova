@@ -277,11 +277,13 @@ const tt = () => [...document.querySelectorAll('#ttiles .kpi .val')].map(e => e.
 const kd = (key, o = {}) => document.dispatchEvent(new KeyboardEvent('keydown', Object.assign({ key, bubbles: true }, o)));
 Object.assign(window, { oneP, tiles, tt, kd, rt, cr, vrows });
 __c('#side [data-a="nav"][data-v="tower"]');
-if (S.screen !== 'tower' || S.tower.tab !== 'overview') throw new Error('the Rule Tower opens on Overview');
+if (S.screen !== 'tower' || S.tower.tab !== 'rules' || S.tower.sel !== 'MOQ') throw new Error('the Rule Tower opens on Rules · MOQ');
 const tabsT = [...document.querySelectorAll('.tw-tabs .tabs button')].map(b => b.dataset.v).join(',');
-if (tabsT !== 'overview,rules,proposals,map') throw new Error('tabs ' + tabsT);
+if (tabsT !== 'rules,proposals') throw new Error('tabs ' + tabsT);
 if (document.querySelector('.catcol,.trcol,.fcard,.tw-b,#twtrace')) throw new Error('old layout remains');
-for (const t of ['Rule Tower · Generics', '34 attributes · 4 lookups and prompts', '31 / 34', '93%', 'Needs your attention', 'MOQ · 4 corrections with the same reason', 'CP-0012 · INFOREM · changes requested by Senior PM', 'Coverage gaps', 'Pallet Ti × Hi', 'no golden cases', 'no owner', 'source partially mapped', 'Recent changes']) __has(t);
+for (const t of ['Rule Tower · Generics', '34 attributes · 4 lookups and prompts']) __has(t);
+if (!document.getElementById('rsum') || document.querySelector('#mapsvg,#ov-kpis,#ov-attn')) throw new Error('Rules page, no Overview or Map');
+__c('.tw-tabs [data-a="tab"][data-v="proposals"]'); __c('#main .crumb a[data-a="tab"][data-v="rules"]'); if (S.tower.tab !== 'rules') throw new Error('breadcrumb root opens Rules');
 // picker: Ctrl+K from any Rule Tower tab opens Rules with the picker; 34 attribute rules + 4 lookups and prompts, pinned Needs attention, search, keyboard
 kd('k', { ctrlKey: true });
 if (S.tower.tab !== 'rules' || !S.tower.pick.open || document.activeElement.id !== 'rpick-q') throw new Error('Ctrl+K opens Rules with the picker and the search focused');
@@ -304,7 +306,7 @@ if (tiles() !== '860|6|11') throw new Error('MOQ tiles ' + tiles());
 for (const t of ['v0.3 · Live', 'Rule', 'Read the ticked MOQ checkbox · HDA p.2', 'If several boxes are ticked, take the lowest and raise an alert', 'Output MOQ as a whole number', 'Cases on v0.3', 'PM corrections', 'Last 30 days', '6 of 215 cases · 2.8%', '↑ rising', 'Since v0.3 live', '11 of 860 cases · 1.3%', 'Review threshold 2.0%',
   'Why PMs corrected it · last 30 days', 'Recent corrections', '4 corrections say', '"Write-in overrides checkbox"', 'Start proposal from this pattern', 'No open proposal', 'Propose a change', 'Version history', 'Compare versions', 'Test evidence']) __has(t);
 for (const t of ['Runs as code', 'Governed', 'How it works', 'Inputs and sources', 'Dependencies', 'Golden cases', 'Accepted unchanged', 'View logic', 'owner:', 'Approval flow']) if (rt().includes(t)) throw new Error('removed from the Rules tab: ' + t);
-if (document.querySelectorAll('#rsteps li').length !== 3 || document.querySelectorAll('#rsum .badge').length !== 1) throw new Error('three steps and one status chip');
+if (document.querySelectorAll('#rsteps li').length !== 4 || document.querySelectorAll('#rsum .badge').length !== 1) throw new Error('four steps and one status chip');
 if (!document.querySelector('#rmetrics .rtick') || !document.querySelector('#rmetrics .rbar i').style.background.includes('--warn')) throw new Error('bars with a threshold tick, 30-day bar in warn');
 if (document.querySelector('#rsum .mg').dataset.tip !== 'Cases processed on this version since it went live' || document.querySelector('#rmetrics .rthr').dataset.tip !== 'When the 30-day correction rate reaches this level, the rule is flagged for review') throw new Error('metric tooltips');
 const bars = () => [...document.querySelectorAll('#rcorr .rreason')].map(b => b.innerText.replace(/\s+/g, ' ').trim()).join('|');
@@ -334,108 +336,154 @@ selectRule('INFOREM'); __has('5 of 190 cases · 2.6%'); __has('9 of 640 cases ·
 if (document.querySelector('#rpattern [data-a="startpat"]')) throw new Error('INFOREM has an open proposal · no start button');
 // back and forward record rule selections
 navBack(); if (S.tower.sel !== 'Shelf life') throw new Error('back restores the previous rule'); navFwd(); if (S.tower.sel !== 'INFOREM') throw new Error('forward');
-// CP-0012 is actionable: the PM responds, the Senior PM approves and merges
+// CP-0012 is actionable: the PM responds, the Senior PM approves and it goes live
 __c('#rpattern [data-a="viewprop"]'); if (S.propView !== 'CP-0012') throw new Error('Open CP-0012');
-if (!document.getElementById('rail-flow').innerText.includes('Needs a test for multi-strength vendors')) throw new Error('changes-requested comment in the approval flow');
-if (document.getElementById('rail-flow').innerText.includes('Technical gates')) throw new Error('Governed proposals skip the technical gates stage');
-__c('#phero [data-a="updateprop"]'); const P12 = findProp('CP-0012'); await __until(() => P12.checksDone && P12.status === 'open');
-setPersona('spm'); if (S.tower.tab !== 'proposals' || !document.querySelector('[data-a="propsub"][data-v="await"]').classList.contains('on') || !document.querySelector('tr[data-v="CP-0012"]')) throw new Error('Senior PM · Awaiting me');
-viewProposal('CP-0012'); __c('#phero [data-a="papprove"]'); if (P12.status !== 'approved') throw new Error('CP-0012 approve');
-__c('#phero [data-a="pmerge"]'); __c('[data-a="mergeok"]'); await __until(() => P12.status === 'merged');
+if (!document.getElementById('ppfoot').innerText.includes('Needs a test for multi-strength vendors')) throw new Error('changes-requested comment on the proposal page');
+if (document.getElementById('pp-test').innerText.includes('Technical gates')) throw new Error('Governed proposals skip the technical gates');
+__c('#ppfoot [data-a="updateprop"]'); const P12 = findProp('CP-0012'); await __until(() => P12.checksDone && P12.status === 'open');
+setPersona('spm'); if (S.tower.tab !== 'proposals' || document.querySelector('[data-a="propsub"]') || document.querySelector('#proptable tr.pgrp').textContent !== 'Awaiting your approval · 2' || document.querySelector('#proptable tr[data-v]').dataset.v !== 'CP-0012') throw new Error('Senior PM · awaiting approval first');
+viewProposal('CP-0012'); __c('#ppfoot [data-a="papprove"]'); await __until(() => P12.status === 'merged');
 selectRule('INFOREM'); __has('v0.6 · Live'); __has('Monitoring · not enough data yet'); __has('No correction pattern · corrections within normal range');
 __has('Rules are proposed by the Product Manager'); if (oneP() !== 0 || document.querySelector('#raction.btn')) throw new Error('read-only rule page for the Senior PM');
-S.tower.tab = 'overview'; render(); __has('1 golden-case promotion pending'); __has('INFOREM');
 // CP-0013: an Interpretive change needs the Senior PM and all automated technical gates; Admin can view but not approve
-setPersona('admin'); S.screen = 'tower'; S.tower.tab = 'overview'; render();
-__has('Storage temperature consistency 98.9% (below 99%)'); if (__t().includes('awaiting your approval')) throw new Error('nothing awaits the Admin');
+setPersona('admin');
 const P13 = findProp('CP-0013'); viewProposal('CP-0013');
-const adm = document.querySelector('#phero [data-a="papprove"]'); if (!adm || !adm.classList.contains('dis') || adm.dataset.tip !== 'Rule changes are approved by the Senior Product Manager') throw new Error('Admin approve tooltip');
+if (document.querySelector('#ppfoot [data-a="papprove"]') || !document.getElementById('ppfoot').innerText.includes('Read-only · Rule changes are approved by the Senior Product Manager')) throw new Error('Admin sees the proposal read-only');
 approveProp(P13); if (Object.keys(P13.approvals).length) throw new Error('Admin must never approve rule changes');
 setPersona('pm'); viewProposal('CP-0009'); __has('Proposed by Admin');
 const P9 = findProp('CP-0009'); if (!P9.approvals.spm || P9.proposerRole !== 'admin' || !P9.gated || !gatesOk(P9)) throw new Error('CP-0009 seed');
 approveProp(P13); if (Object.keys(P13.approvals).length) throw new Error('the PM never approves');
 setPersona('spm'); selectRule('Storage temperature'); __has('CP-0013 · awaiting Senior PM'); __has('Rules are proposed by the Product Manager');
 viewProposal('CP-0013');
-const rf13 = document.getElementById('rail-flow').innerText;
-for (const t of ['Draft', 'Checks passed', 'Technical gates · automated', '5/5 passed · 15:49', 'Senior PM review', 'Merged · live']) if (!rf13.includes(t)) throw new Error('CP-0013 tracker: ' + t);
-if (rf13.indexOf('Technical gates') > rf13.indexOf('Senior PM review') || rf13.indexOf('Checks passed') > rf13.indexOf('Technical gates')) throw new Error('tracker order');
-if (!document.querySelector('#rail-flow [data-a="papprove"]')) throw new Error('inline approve for the pending approver');
-viewProposal('CP-0013'); __c('[data-a="ptab"][data-v="checks"]');
-for (const t of ['Checks 8/8 · Gates 5/5', 'Technical gates · automated', 'Automated', 'Consistency', '10/10 runs identical', 'Golden-set regression', '0 regressions on 50 golden cases', 'Output schema unchanged', 'Model gateway checks', '8/8 passed: pinned model, injection screening, masking, schema, budget…', 'Cost impact within budget headroom', '+$12/month · headroom $680']) __has(t);
-// a failing gate blocks the merge even after the Senior PM approves
+for (const t of ['8 of 8 passed', 'Technical gates · automated', 'Automated', 'Consistency', '10/10 runs identical', 'Golden-set regression', '0 regressions on 50 golden cases', 'Output schema unchanged', 'Model gateway checks', '8/8 passed: pinned model, injection screening, masking, schema, budget…', 'Cost impact within budget headroom', '+$12/month · headroom $680']) __has(t);
+for (const id of ['pp-why', 'pp-diff', 'pp-test', 'pp-impact', 'pp-ba', 'pp-tl']) if (!document.getElementById(id)) throw new Error('legacy proposal section ' + id);
+// a failing gate blocks approval
 S.gateFail = true; render(); __has('9/10 runs identical'); __has('Technical gate failed');
 if (!document.querySelector('.chk.bad')) throw new Error('failing gate shown in red');
-__c('#phero [data-a="papprove"]'); if (!P13.approvals.spm) throw new Error('Senior PM approves CP-0013');
-const mb = document.querySelector('#phero [data-a="pmerge"]'); if (!mb || !mb.classList.contains('dis') || mb.dataset.tip !== 'Technical gate failed · fix and re-run checks') throw new Error('merge disabled on a failed gate');
-if (mergeReady(P13).ok || !document.getElementById('rail-flow').innerText.includes('Consistency failed')) throw new Error('gate failure in tracker');
-S.gateFail = false; render(); __has('Checks 8/8 · Gates 5/5');
-__c('#phero [data-a="pmerge"]'); __c('[data-a="mergeok"]'); await __until(() => P13.status === 'merged');
+const ab = document.querySelector('#ppfoot [data-a="papprove"]'); if (!ab || !ab.classList.contains('dis') || ab.dataset.tip !== 'Technical gate failed · fix and re-run checks') throw new Error('approve disabled on a failed gate');
+approveAndPublish(P13); if (P13.approvals.spm || P13.status !== 'open') throw new Error('no approval on a failed gate');
+S.gateFail = false; render();
+__c('#ppfoot [data-a="papprove"]'); await __until(() => P13.status === 'merged');
 if (!S.vhist['Storage temperature'].some(v => v.cp === 'CP-0013' && v.approvers.join() === 'Senior PM')) throw new Error('CP-0013 version history');
 setPersona('pm');
+S.screen = 'case'; S.caseId = 'CASE-0091'; S.caseTab = 'audit'; render();setPersona('pm');
 S.screen = 'case'; S.caseId = 'CASE-0091'; S.caseTab = 'audit'; render();
-// ---- 13_tower_s1_stepper
-__c('[data-a="ctab"][data-v="attrs"]'); __c('[data-a="propose"]');
-if (S.role !== 'pm' || S.screen !== 'tower' || S.tower.tab !== 'proposals' || S.propView !== 'new' || S.d.rule !== 'MOQ' || !document.getElementById('stepper')) throw new Error('the suggestion card opens Proposals › New proposal for MOQ, as the PM');
-__has('New proposal · MOQ'); const cur0 = document.getElementById('newprop-cur').textContent; if (!cur0.includes('Current · v0.3') || !cur0.includes('Read the ticked MOQ checkbox · HDA p.2')) throw new Error('current rule card');
-__c('[data-a="rsel"][data-v="MOQ"]'); if (S.tower.tab !== 'rules' || S.tower.sel !== 'MOQ' || document.getElementById('raction').textContent !== 'Continue draft') throw new Error('back link returns to the rule with Continue draft');
-__c('#raction'); if (S.propView !== 'new' || !document.getElementById('stepper')) throw new Error('Continue draft reopens the new proposal');
-if (document.getElementById('rule-text').value !== SC.S1.text || stepFlags().cur !== 1) throw new Error('S1 prefilled at Describe');
-if (oneP() !== 1) throw new Error('one primary action per view · ' + oneP());
-__has('Try an example:'); __has('Supplier override');
+// ---- 13_create_new_define
+__c('[data-a="ctab"][data-v="attrs"]');
+__c('#savetc'); if (!S.testCases.includes('CASE-0091') || S.testCases.length !== 6 || !document.getElementById('savetc').innerText.includes('Saved as test case ✓')) throw new Error('Save as test case on CASE-0091');
+if (!S.audit['CASE-0091'].some(e => /Saved as test case/.test(e.summary))) throw new Error('save as test case audit event');
+__c('[data-a="propose"]');
+if (S.role !== 'pm' || S.screen !== 'tower' || S.tower.tab !== 'proposals' || S.propView !== 'new' || S.d.rule !== 'MOQ') throw new Error('the suggestion card opens Proposals › Create new for MOQ, as the PM');
+if (document.getElementById('pfield').value !== 'MOQ' || document.getElementById('rule-text').value !== 'If the supplier has handwritten a MOQ, use that and ignore the checkboxes') throw new Error('field preselected and text pre-filled');
+__has('Create new proposal · MOQ'); __has('Save draft');
+const cur0 = document.getElementById('currule'); if (!cur0.innerText.includes('v0.3 · Live') || cur0.querySelectorAll('li').length !== 4) throw new Error('current rule card');
+if (!document.querySelector('#sec2.lock') || !document.querySelector('#sec3.lock') || !document.getElementById('sec2').innerText.includes('Locked')) throw new Error('Test and Send are locked');
+if (document.querySelector('[data-a="sbrun"],[data-a="nextstep"],#stepper')) throw new Error('no stepper and no Run button');
+selectRule('MOQ'); if (document.getElementById('raction').textContent !== 'Continue draft') throw new Error('rule page offers Continue draft');
+__c('#raction'); if (S.propView !== 'new' || document.getElementById('rule-text').value !== SC.S1.text) throw new Error('Continue draft reopens Create new');
+if (oneP() !== 1) throw new Error('one primary action · ' + oneP());
 __c('[data-a="interpret"]'); await __until(() => document.querySelector('[data-a="confirm"]'));
 __has('MOQ · draft v0.4 (live v0.3)'); __has('Interpreted in 2.1 s'); __has('Interpreted by pinned model · 2.1 s · $0.006 · 8/8 gateway checks ✓');
-if (stepFlags().cur !== 2 || document.querySelector('.trcol,.tcard')) throw new Error('step 2 with a one-line model summary');
-const cvpT = document.getElementById('cvp').textContent;
-if (!cvpT.includes('Current · v0.3') || !cvpT.includes('Proposed · draft v0.4') || document.querySelectorAll('#cvp .mk').length !== 2) throw new Error('current versus proposed');
+__has('Handwritten MOQ now takes priority over checkboxes');
+const dk = () => [...document.querySelectorAll('#dfx li')].map(l => l.className || 'same').join(',');
+if (dk() !== 'add,rew,same,same,same' || document.querySelector('#dfx li.mov')) throw new Error('hero diff ' + dk());
+const dl = [...document.querySelectorAll('#dfx .dl')].map(e => e.textContent).join(',');
+if (dl !== 'Added,Reworded') throw new Error('diff labels ' + dl);
+if (!document.querySelector('#dfx li.rew s').textContent.includes('Read the ticked MOQ checkbox · HDA p.2') || !document.querySelector('#dfx li.rew ins').textContent.includes('Otherwise, read the ticked MOQ checkbox · HDA p.2')) throw new Error('reworded old and new text');
+__c('[data-a="dsbs"]'); if (!document.querySelector('#interp #cvp')) throw new Error('side by side'); __c('[data-a="dsbs"]');
+// the diff marks a move only when the order really changed
+const mv = ruleDiff(['A step one', 'B step two', 'C step three'], ['C step three', 'A step one', 'B step two']).map(r => r.kind).join(',');
+const ins = ruleDiff(['A step one', 'B step two'], ['New first line', 'A step one', 'B step two']).map(r => r.kind).join(',');
+const rm = ruleDiff(['A step one', 'B step two', 'C step three'], ['A step one', 'C step three']).map(r => r.kind).join(',');
+if (mv !== 'mov,same,same' || ins !== 'add,same,same' || rm !== 'same,del,same') throw new Error('ruleDiff ' + [mv, ins, rm].join(' / '));
 __c('[data-a="modeltoggle"]'); __has('Gateway checkpoints'); __c('[data-a="modeltoggle"]');
 __c('[data-a="compiled"]'); if (!document.querySelector('#layers .modal.xp .xp-f')) throw new Error('compiled rule should open in .modal.xp');
-__has('COMPILED RULE · WHAT ACTUALLY RUNS'); __has('0 LLM calls at runtime'); __has('hw.confidence >= 0.60'); __has('Structured rule (JSON)');
+__has('COMPILED RULE · WHAT ACTUALLY RUNS'); __has('0 LLM calls at runtime'); __has('hw.confidence >= 0.60');
 S.r100 = null; __c('#layers [data-a="run100"]'); await __until(() => S.r100 && S.r100.done); __has('identical · 0 LLM calls · 3 ms total'); __c('#layers .x');
-// ---- 14_checks_test_submit
-__c('[data-a="confirm"]'); await __idle(); __has('All checks passed');
-if (stepFlags().cur !== 3 || document.querySelectorAll('.stp-sum').length !== 2) throw new Error('step 3 with two summaries');
-__c('[data-a="nextstep"][data-v="4"]');
-if (!document.querySelector('#cvp.cvp1')) throw new Error('the comparison collapses at Test');
-__c('[data-a="sbmode"][data-v="golden"]'); __c('[data-a="sbrun"]'); await __idle();
-if (tt() !== '0|3|$0 / month') throw new Error('test tiles ' + tt());
-__has('No regressions · 3 cases change · 0 new alerts'); __has('Runtime LLM calls per NDC: unchanged');
-__c('[data-a="sbmode"][data-v="replay"]'); __c('[data-a="sbrun"]'); await __idle();
-if (!document.getElementById('rhl').innerText.includes('9 of 11 match edits PMs already made')) throw new Error('replay highlight');
-// going back shows the earlier step; the header jumps forward again
-__c('.stp-sum [data-a="gostep"][data-v="2"]'); __has('✓ Interpretation confirmed by the Product Manager');
-__c('.stp[data-a="gostep"][data-v="4"]'); __c('[data-a="nextstep"][data-v="5"]');
-__has('Required approvals'); __has('Senior Product Manager · Generics'); if (document.getElementById('step5').innerText.includes('Technical gates')) throw new Error('Governed has no technical gates'); if (document.querySelectorAll('.stp-sum').length !== 4) throw new Error('four summaries at Submit');
-__set('#cp-note', 'Handwritten MOQ wins over the checkbox · 9 of 11 replay changes match PM edits');
-// ---- 15_proposal_handoff_merge
-__c('[data-a="openprop"]'); __has('CP-0014 · MOQ: handwritten value overrides checkbox'); __has('Proposed by Product Manager'); __has('Handwritten MOQ wins over the checkbox');
-if (S.tower.tab !== 'proposals' || S.propView !== 'CP-0014' || S.propTab !== 'changes') throw new Error('submit opens the proposal detail on Changes');
-const P = findProp('CP-0014');
-if (document.querySelector('[data-a="pmerge"]')) throw new Error('the proposer never sees Merge');
-await __until(() => P.checksDone);
-const own = document.querySelector('.propact [data-why="Proposer cannot approve their own change"]'); if (!own || !own.classList.contains('dis')) throw new Error('proposer approve not disabled');
-if (own.dataset.tip !== 'Proposer cannot approve their own change') throw new Error('proposer tooltip');
+// ---- 14_test_auto
+// the director's failure: one unintended change on a saved test case
+S.nextUnintended = true;
+__c('[data-a="confirm"]'); if (!S.d.defined || !document.querySelector('#sec1 .fs-sum') || document.querySelector('#sec2.lock')) throw new Error('confirm collapses Define and unlocks Test');
+await __until(() => S.d.test && (S.d.test.done || S.d.test.hold));
+if (!S.d.test.hold || S.d.test.s2.totals.unint !== 1) throw new Error('one unintended change expected');
+__has('1 unintended change stops submit'); __has('CASE-0048'); __has('"min 6 per case"'); if (!document.querySelector('#sec3.lock')) throw new Error('Send stays locked');
+__c('[data-a="markopen"][data-v="CASE-0048"]'); __c('[data-a="marksave"]'); if (S.d.marks['CASE-0048']) throw new Error('a reason is required');
+if (!document.getElementById('mark-txt')) throw new Error('the reason box stays open'); __set('#mark-txt', 'Supplier confirmed by email that 6 is the minimum'); __c('[data-a="marksave"]');
+await __until(() => S.d.test.pass);
+if (S.d.test.s2.totals.intended !== 1 || S.d.test.ep !== 'EP-0042') throw new Error('marked intended · evidence pack EP-0042');
+// editing Define clears the test and locks the later sections
+__c('#sec1 [data-a="fsec"]'); __set('#rule-text', 'Only use a MOQ handwritten in the MOQ box on HDA p.2');
+if (S.d.defined || S.d.test || !document.querySelector('#sec2.lock') || !document.querySelector('#sec3.lock')) throw new Error('editing re-locks');
+__c('[data-a="interpret"]'); await __idle(); if (S.d.variant !== 'box') throw new Error('MOQ box wording');
+__c('[data-a="confirm"]'); await __until(() => S.d.test && S.d.test.done);
+if (!S.d.test.pass || S.d.test.s2.totals.unint || S.d.test.s2.totals.intended) throw new Error('rephrased rule passes with no unintended change');
+S.nextUnintended = false;
+__c('#sec1 [data-a="fsec"]'); __c('#sec1 [data-a="rephrase"]'); __set('#rule-text', SC.S1.text); __c('[data-a="interpret"]'); await __idle(); __c('[data-a="confirm"]');
+await __until(() => S.d.test && S.d.test.done);
+const T4 = S.d.test;
+if (!T4.pass || T4.ep !== 'EP-0044' || T4.s1.rows.filter(r => r.ok).length !== 4) throw new Error('hero test ' + JSON.stringify([T4.pass, T4.ep]));
+if (T4.s2.counts.approved !== 209 || T4.s2.counts.changed !== 6 || T4.s2.counts.saved !== 6) throw new Error('reference counts ' + JSON.stringify(T4.s2.counts));
+__has('4 of 6 PM corrections now fixed'); __has('evidence pack EP-0044');
+if (!document.querySelector('#sec2 .fs-sum') || document.querySelector('#sec3.lock') || !document.getElementById('sendlist')) throw new Error('Test collapses; Send unlocks and expands');
+__c('#sec2 [data-a="fsec"]');
+if (document.getElementById('refhead').innerText !== '4 of 6 PM corrections now fixed') throw new Error('headline ' + document.getElementById('refhead').innerText);
+if (document.getElementById('refsub').innerText !== '2 not fixed: corrected for other reasons (Supplier confirmed by email · Document error)') throw new Error('sub-line ' + document.getElementById('refsub').innerText);
+const tot = [...document.querySelectorAll('#reftot .otag')].map(e => e.textContent).join('|'); if (tot !== 'Pass 215|Fixed 4|Not fixed 2|Unintended 0|Broken 0') throw new Error('totals ' + tot);
+for (const t of ['PM approved · last 30 days', 'PM changed · last 30 days', 'Saved as test case · any age', 'Consistent on 3 runs', 'Schema valid', 'Gateway checks passed', 'Cost within budget', 'Test results saved as evidence pack']) __has(t);
+if (!document.querySelector('#tstg2 [data-tip^="Known-correct cases from PM work"]')) throw new Error('reference cases tooltip');
+__c('[data-a="reftable"]'); if (document.querySelectorAll('#reftable tbody tr').length !== 13) throw new Error('case table rows ' + document.querySelectorAll('#reftable tbody tr').length);
+if (!document.querySelector('#reftable tr[data-case="CASE-0091"] .otag.fixed') || !document.querySelector('#reftable tr[data-case="CASE-0057"] .otag.notfixed')) throw new Error('case outcomes');
+// Save draft, then reopen from the list at the same stage
+__c('#savedraft'); const PD = findProp(S.d.pid); if (!PD || PD.id !== 'CP-0014' || PD.status !== 'draft') throw new Error('Save draft · CP-0014');
+__c('[data-a="proplist"]'); if (!document.querySelector('#proptable tr[data-v="CP-0014"]').innerText.includes('Draft')) throw new Error('draft in the list');
+__c('#proptable tr[data-v="CP-0014"]'); if (S.propView !== 'new' || !S.d.test || !S.d.test.pass || !document.getElementById('sendlist')) throw new Error('draft reopens at Send for approval');
+// ---- 15_proposal_send_approve
+__c('[data-a="reviewprop"]'); const P = findProp('CP-0014');
+if (S.propView !== 'CP-0014' || !P.presend) throw new Error('Review proposal opens the proposal page before sending');
+for (const id of ['phero', 'pp-why', 'pp-diff', 'pp-test', 'pp-impact', 'pp-ba', 'pp-tl', 'ppfoot']) if (!document.getElementById(id)) throw new Error('proposal page section ' + id);
+const ppt = id => document.getElementById(id).innerText;
+for (const t of ['CP-0014 · MOQ', 'v0.3 → v0.4', 'Draft', 'Proposed by Product Manager', 'EP-0044']) if (!ppt('phero').includes(t)) throw new Error('header: ' + t);
+if (!ppt('pp-why').includes(SC.S1.text) || !ppt('pp-why').includes('4 corrections: Write-in overrides checkbox') || document.querySelectorAll('#pp-pattern [data-a="corrrow"]').length !== 4) throw new Error('why this change');
+if ([...document.querySelectorAll('#pp-diff #dfx li')].map(l => l.className || 'same').join(',') !== 'add,rew,same,same,same') throw new Error('proposal diff');
+__c('[data-a="ppsbs"]'); if (!document.querySelector('#pp-diff #cvp')) throw new Error('proposal side by side'); __c('[data-a="ppsbs"]');
+for (const t of ['Validity 4/4', '4 of 6 PM corrections now fixed', 'Consistent on 3 runs', 'EP-0044']) if (!ppt('pp-test').includes(t)) throw new Error('test summary: ' + t);
+for (const t of ['4 of 215', 'CASE-0091', 'CASE-0094', 'MOQ → Selling unit']) if (!ppt('pp-impact').includes(t)) throw new Error('impact: ' + t);
+for (const t of ['CASE-0091', 'Checkbox 16 · handwritten 1', '16 → 1', 'CASE-0084', 'CASE-0071']) if (!ppt('pp-ba').includes(t)) throw new Error('before and after: ' + t);
+for (const t of ['Created', 'Tested', 'EP-0044']) if (!ppt('pp-tl').includes(t)) throw new Error('timeline: ' + t);
+if (oneP() !== 1 || !document.querySelector('#ppfoot [data-a="backedit"]')) throw new Error('pre-send: Back to edit · Send for approval');
+__c('#ppfoot [data-a="sendprop"]');
+if (P.status !== 'open' || !P.locked || S.propView !== null || !document.querySelector('#proptable tr[data-v="CP-0014"]').innerText.includes('Sent for approval')) throw new Error('send locks the proposal and returns to the list');
+if (!document.getElementById('toasts').innerText.includes('CP-0014 sent for approval')) throw new Error('send toast');
+viewProposal('CP-0014'); if (document.querySelector('#ppfoot [data-a="papprove"],#ppfoot [data-a="sendprop"]')) throw new Error('the proposer sees a read-only page');
+__has('Sent for approval · waiting for the Senior PM');
 approveProp(P); if (P.approvals.pm || P.status !== 'open') throw new Error('the PM must never approve their own proposal');
-__has('1 · Plain language'); __has('3 · Compiled logic'); __has('Waiting for Senior PM');
-__c('[data-a="diffxp"]'); if (!document.querySelector('#layers .modal.xp')) throw new Error('diff detail should open in .modal.xp'); __c('#layers .x');
-if (P.gated || document.getElementById('rail-flow').innerText.includes('Technical gates')) throw new Error('S1 is Governed · no gates'); __has('Pending · ');
 selectRule('MOQ'); __has('CP-0014 · awaiting Senior PM'); __has('CP-0014 open · awaiting Senior PM ›'); __has('Propose a change');
-if (document.getElementById('stepper') || document.querySelector('#rpattern [data-a="startpat"]')) throw new Error('rule page shows the proposal state');
 viewProposal('CP-0014');
 openChooser(); if (!document.getElementById('overlay').innerText.includes('1 proposal waiting for your review · CP-0014 MOQ: handwritten value overrides checkbox')) throw new Error('Senior PM tile should show the live proposal'); closeOv();
 __has('Switch to Senior PM to review →'); __c('[data-a="handoff"][data-v="spm"]');
 await __until(() => S.role === 'spm' && !S.switching && S.propView === 'CP-0014');
-S.propView = null; S.tower.propSub = null; render();
-if (!document.querySelector('[data-a="propsub"][data-v="await"]').classList.contains('on') || !document.querySelector('tr[data-v="CP-0014"]')) throw new Error('Awaiting me lists CP-0014');
-__c('tr[data-v="CP-0014"]'); if (oneP() !== 1) throw new Error('one primary on the proposal page');
-__c('#phero [data-a="papprove"]'); __c('#phero [data-a="pmerge"]'); __has('Merge and publish MOQ v0.4?'); __c('[data-a="mergeok"]'); await __w(100);
-if (S.reg.MOQ.live !== '0.4' || P.status !== 'merged') throw new Error('merge');
-if (!S.audit['CASE-0091'].some(e => /CP-0014 merged/.test(e.actor.name) && /approver Senior PM/.test(e.summary))) throw new Error('merge audit event');
-selectRule('MOQ'); __has('v0.4 · Live'); __has('Read handwritten MOQ · HDA p.2'); __has('Monitoring · not enough data yet'); __has('Review threshold 2.0%'); __has('No correction pattern · corrections within normal range'); __has('No corrections on v0.4 yet');
-if (tiles() !== '0') throw new Error('MOQ after merge ' + tiles());
-const vr1 = vrows(); if (!vr1[0].startsWith('v0.4 live just now') || !vr1[1].startsWith('v0.3 superseded 16 weeks ago')) throw new Error('versions after merge ' + vr1.join(' / '));
-__c('#rversions [data-a="evidence"][data-ver="0.4"]'); __has('From CP-0014'); __has('Proposal checks'); __has('Sandbox results'); __has('Golden set (50)'); __c('#layers .x');
-S.tower.tab = 'overview'; render(); __has('MOQ · Merged · v0.3 → v0.4');
-S.screen = 'queue'; render(); if (!qRowT('CASE-0091').includes('Rule updated · re-run available')) throw new Error('re-run flag after merge');
+S.propView = null; render();
+if (document.querySelector('#proptable tr[data-v]').dataset.v !== 'CP-0014' || document.querySelector('#proptable tr.pgrp').textContent !== 'Awaiting your approval · 1') throw new Error('awaiting approval first');
+__c('tr[data-v="CP-0014"]');
+// Request changes needs a comment; the PM then edits in Create new and tests again
+__c('#ppfoot [data-a="preqopen"]'); __c('#ppfoot [data-a="preqchg"]'); if (P.status !== 'open') throw new Error('a comment is required');
+__set('#req-comment', 'Please add a note on illegible handwriting'); __c('#ppfoot [data-a="preqchg"]');
+if (P.status !== 'changes' || P.reqComment !== 'Please add a note on illegible handwriting') throw new Error('changes requested');
+setPersona('pm'); S.screen = 'tower'; S.tower.tab = 'proposals'; S.propView = null; render(); __c('#proptable tr[data-v="CP-0014"]');
+if (S.propView !== 'new' || S.d.pid !== 'CP-0014' || S.d.defined || S.d.test || !document.getElementById('reqnote')) throw new Error('changes requested reopens Create new with Define editable');
+__c('[data-a="confirm"]'); await __until(() => S.d.test && S.d.test.done); if (!S.d.test.pass) throw new Error('fresh test');
+__c('[data-a="reviewprop"]'); __c('#ppfoot [data-a="sendprop"]'); if (P.status !== 'open' || !P.events.some(e => /re-sent for approval/.test(e.text))) throw new Error('re-sent');
+setPersona('spm'); viewProposal('CP-0014'); if (oneP() !== 1) throw new Error('one primary on the proposal page');
+__c('#ppfoot [data-a="papprove"]'); await __until(() => P.status === 'merged');
+if (S.reg.MOQ.live !== '0.4') throw new Error('approve makes v0.4 live');
+__has('Approved · live');
+if (!S.audit['CASE-0091'].some(e => /CP-0014 approved · live/.test(e.actor.name) && /approver Senior PM/.test(e.summary))) throw new Error('approval audit event');
+const rvb = document.querySelector('#ppfoot [data-a="revert"]'); if (!rvb || !rvb.classList.contains('dis') || rvb.dataset.tip !== 'Rollbacks are proposed by the Product Manager or Admin · the Senior PM approves') throw new Error('the Senior PM does not propose rollbacks');
+selectRule('MOQ'); __has('v0.4 · Live'); __has('If a MOQ is handwritten on HDA p.2, use it and skip the checkboxes'); __has('Monitoring · not enough data yet'); __has('Review threshold 2.0%'); __has('No correction pattern · corrections within normal range'); __has('No corrections on v0.4 yet');
+if (tiles() !== '0') throw new Error('MOQ after approval ' + tiles());
+const vr1 = vrows(); if (!vr1[0].startsWith('v0.4 live just now') || !vr1[1].startsWith('v0.3 superseded 16 weeks ago')) throw new Error('versions after approval ' + vr1.join(' / '));
+__c('#rversions [data-a="evidence"][data-ver="0.4"]'); __has('From CP-0014'); __has('evidence pack EP-0045'); __has('4 of 6 PM corrections now fixed'); __c('#layers .x');
+S.screen = 'queue'; render(); if (!qRowT('CASE-0091').includes('Rule updated · re-run available')) throw new Error('re-run flag after approval');
 viewProposal('CP-0014');
 // ---- 16_handoff_case_rerun
 __has('Switch to Product Manager to re-run CASE-0091 →'); __c('[data-a="handoff"][data-v="pm"]');
@@ -461,19 +509,13 @@ S.screen = 'queue'; S.qf = QF_DEFAULT(); S.qf.tab = 'done'; render(); if (!docum
 // revert MOQ after approval: approved case must not change
 selectRule('MOQ'); if (tiles() !== '2') throw new Error('re-run and approval count on v0.4 ' + tiles());
 viewProposal('CP-0014');
-const vr = document.getElementById('rail-versions').innerText;
-for (const t of ['1,102', '1,480', 'Product Manager proposed · approved by Senior PM', 'CP-0014']) if (!vr.includes(t)) throw new Error('versions rail: ' + t);
-if (document.querySelector('#rail-versions [data-a="revert"][data-to="0.4"]')) throw new Error('no revert on the live version');
-__c('#rail-versions [data-a="revert"][data-to="0.3"]'); __has('Rollback policy: Senior PM approval');
+__c('#ppfoot [data-a="revert"][data-to="0.3"]'); __has('Rollback policy: Senior PM approval');
 const RV = findProp(S.propView); await __until(() => RV.checksDone);
 if (RV.required.join() !== 'spm' || RV.gated) throw new Error('rollback needs the Senior PM');
-setPersona('spm'); viewProposal(RV.id); __c('#phero [data-a="papprove"]'); __c('#phero [data-a="pmerge"]'); __c('[data-a="mergeok"]'); await __w(100);
+setPersona('spm'); viewProposal(RV.id); __c('#ppfoot [data-a="papprove"]'); await __until(() => RV.status === 'merged');
 if (S.reg.MOQ.live !== '0.3') throw new Error('revert');
 selectRule('MOQ'); if (tiles() !== '860|6|11') throw new Error('v0.3 values restored ' + tiles()); __has('6 of 215 cases · 2.8%'); __has('4 corrections say');
 if (!document.querySelector('#rversions .vst-rev') || !vrows()[0].startsWith('v0.4 reverted')) throw new Error('reverted version struck through');
-viewProposal('CP-0014');
-const rvb = document.querySelector('#rail-versions [data-a="revert"]'); if (!rvb || !rvb.classList.contains('dis') || rvb.dataset.tip !== 'Rollbacks are proposed by the Product Manager or Admin · the Senior PM approves') throw new Error('the Senior PM does not propose rollbacks');
-S.tower.tab = 'overview'; render(); __has('MOQ · Reverted · v0.4 → v0.3');
 setPersona('pm'); S.screen = 'case'; S.caseTab = 'attrs'; render(); __has('published after approval · approved values unchanged');
 await rerunCase(); if (moqState().value !== '1') throw new Error('approved case changed');
 // ---- 18_versions_compare
@@ -488,72 +530,73 @@ if (!document.querySelector('[data-a="goldenok"]').classList.contains('dis')) th
 setPersona('spm'); S.screen = 'case'; render(); __c('[data-a="goldenok"]');
 if (S.goldenPromo !== 'approved' || !goldenFor('MOQ').some(g => g.id === 'Golden 51') || !document.getElementById('toasts').innerText.includes('Golden set: 50 → 51 · 7 from PM corrections')) throw new Error('golden promotion');
 // ---- 20_s7_gates
+const testDone = () => __until(() => S.d.test && (S.d.test.done || S.d.test.hold) && !busy());
+Object.assign(window, { testDone });
 preset('S7'); if (S.role !== 'pm') throw new Error('authoring presets sign in as the PM');
-if (S.tower.sel !== 'Packaging free-text interpretation' || S.propView !== 'new' || stepFlags().cur !== 1) throw new Error('S7 opens a new proposal for its rule at Describe');
-__c('[data-a="interpret"]'); await __idle(); __has('LLM step · pinned · cached'); __has('PROMPT DIFF · ADDED LINES IN GREEN');
-__c('[data-a="confirm"]'); await __idle(); __has('Output schema unchanged');
-__c('[data-a="nextstep"][data-v="4"]'); __c('[data-a="sbrun"]'); await __idle(); __has('+210 tokens');
-if (tt() !== '0|4|+$36 / month') throw new Error('S7 tiles ' + tt());
-__c('[data-a="run10"]'); await __until(() => S.r10 && S.r10.done); __has('10/10 identical');
-__c('[data-a="nextstep"][data-v="5"]'); __has('Senior Product Manager · Generics'); __has('Technical gates · automated'); __has('shadow run on by default');
-__c('[data-a="openprop"]'); const P7 = findProp(S.propView); await __until(() => P7.gatesDone);
-if (P7.required.join() !== 'spm' || !P7.gated) throw new Error('interpretive needs the Senior PM and the technical gates');
-const rf7 = document.getElementById('rail-flow').innerText;
-if (!rf7.includes('Technical gates · automated') || !rf7.includes('5/5 passed') || !rf7.includes('Senior PM review') || /Admin review/.test(rf7)) throw new Error('S7 tracker');
-if (!P7.events.some(e => e.who === 'Technical gates' && e.text === 'automated: 5/5 passed')) throw new Error('gates event');
-__c('[data-a="ptab"][data-v="checks"]'); __has('+$36/month · headroom $680'); __has('10/10 runs identical');
-setPersona('spm'); viewProposal(P7.id); if (document.querySelector('#phero [data-a="handoff"]')) throw new Error('no second-approval hand-off');
-__c('#phero [data-a="papprove"]'); __c('#phero [data-a="pmerge"]');
-if (!document.querySelector('input[data-c="mshadow"]').checked) throw new Error('shadow default on');
-__c('[data-a="mergeok"]'); await __until(() => P7.status === 'merged');
+if (S.d.rule !== 'Packaging free-text interpretation' || S.propView !== 'new' || document.getElementById('pfield').value !== 'Packaging free-text interpretation') throw new Error('S7 opens Create new with its field');
+__c('[data-a="interpret"]'); await __idle(); __has('LLM step · pinned · cached'); __has('Prompt · added lines in green');
+S.gateFail = true; __c('[data-a="confirm"]'); await testDone();
+if (S.d.test.fail !== 3 || !__t().includes('Consistent on 3 runs failed')) throw new Error('a failing gateway run fails stage 3');
+S.gateFail = false; __c('[data-a="backdefine"]'); __c('[data-a="confirm"]'); await testDone();
+if (!S.d.test.pass || !S.d.test.s1.rows[1].msg.includes('Output schema unchanged') || !S.d.test.s3.rows[3][2].includes('+$36 / month')) throw new Error('S7 test');
+if (S.d.test.s2.headline !== '<b>4 of 4</b> PM corrections now fixed') throw new Error('S7 reference cases ' + S.d.test.s2.headline);
+__c('[data-a="reviewprop"]'); const P7 = findProp(S.propView); __c('#ppfoot [data-a="sendprop"]');
+if (P7.required.join() !== 'spm' || !P7.gated || !P7.gatesDone || gateState(P7) !== 'ok' || !P7.shadow) throw new Error('interpretive needs the Senior PM and the technical gates');
+setPersona('spm'); viewProposal(P7.id); if (document.querySelector('#ppfoot [data-a="handoff"]')) throw new Error('no second-approval hand-off');
+__c('#ppfoot [data-a="papprove"]'); __has('Shadow run'); await __until(() => P7.status === 'merged');
 // ---- 21_s2_clash_v03
-preset('S2'); __c('[data-a="interpret"]'); await __idle(); __c('[data-a="confirm"]'); await __idle();
-__has('4 cases'); if (!document.querySelector('.stp.blk') || !document.querySelector('[data-a="nextstep"][data-v="4"]').classList.contains('dis')) throw new Error('clash blocks Checks');
-__c('input[data-c="res"][value="b"]'); __c('[data-a="recheck"]'); await __idle();
-__has('Precedence explicit: handwritten → supplier default → checkbox'); __c('[data-a="nextstep"][data-v="4"]'); __c('[data-a="sbrun"]'); await __idle(); __has('No regressions');
-S.tower.tab = 'map'; S.map.view = 'coverage'; S.map.cat = 'Generics'; S.map.open = { Packaging: true }; render();
-if (![...document.querySelectorAll('#mapsvg text')].some(t => /MOQ · Conflict/.test(t.textContent))) throw new Error('map conflict');
-openDraftView(S.d.rule); render();
-// ---- 22_s3_clarify
+preset('S2'); __c('[data-a="interpret"]'); await __idle(); __c('[data-a="confirm"]'); await testDone();
+if (S.d.test.fail !== 1 || !document.querySelector('#sec2.failed')) throw new Error('clash fails stage 1');
+__has('4 cases'); __has('No clash with other rules failed'); if (!document.querySelector('#sec3.lock')) throw new Error('Send stays locked');
+__c('input[data-c="res"][value="b"]'); __c('[data-a="recheck"]'); await __until(() => S.d.variant === 'b' && S.d.test && S.d.test.done && !busy());
+if (!S.d.test.pass || !S.d.test.s1.rows[3].msg.includes('Precedence explicit: handwritten → supplier default → checkbox')) throw new Error('option (b) passes');
+// ---- 22_s3_clarify_intended
 preset('S3'); __c('[data-a="interpret"]'); await __idle(); __has('I need two details before drafting this rule.');
-if (stepFlags().cur !== 1) throw new Error('clarification stays at Describe');
+if (S.d.defined || document.querySelector('[data-a="confirm"]')) throw new Error('clarification stays in Define');
 __c('[data-a="clar"][data-q="q1"][data-v="qty"]'); __c('[data-a="clar"][data-q="q2"][data-v="alert"]'); __c('[data-a="resume"]'); await __idle();
-__c('[data-a="confirm"]'); await __idle(); __c('[data-a="nextstep"][data-v="4"]'); __c('[data-a="sbrun"]'); await __idle(); __has('Alert list grows 9 → 10');
-__has('Mark as intended change');
+__c('[data-a="confirm"]'); await testDone();
+if (!S.d.test.hold || S.d.test.s2.totals.unint !== 5) throw new Error('S3 changes 5 saved cases');
+__has('Alert list grows 9 → 10'); __has('Mark as intended');
+for (const r of S.d.test.s2.rows.filter(x => x.out === 'unint')) { __c(`[data-a="markopen"][data-v="${r.c}"]`); __set('#mark-txt', 'New bulk-pack alert is intended'); __c(`[data-a="marksave"][data-v="${r.c}"]`); }
+await testDone(); if (!S.d.test.pass || S.d.test.s2.totals.intended !== 5) throw new Error('marking every change as intended lets the test pass');
+__c('[data-a="reviewprop"]'); if (!document.getElementById('pp-marks') || !document.getElementById('pp-marks').innerText.includes('New bulk-pack alert is intended')) throw new Error('reasons shown on the proposal page');
 // ---- 23_s4_loop_map
-preset('S4'); if (S.tower.sel !== 'Manufacturer size') throw new Error('S4 opens Manufacturer size');
-__c('[data-a="interpret"]'); await __idle(); __c('[data-a="confirm"]'); await __idle(); __has('Circular dependency'); __has('Use raw input');
-S.tower.tab = 'map'; S.map.view = 'dependency'; render(); __has('Loop in draft S4');
-if (!document.querySelector('#mapsvg path.de.loop')) throw new Error('red loop');
-openDraftView(S.d.rule); render(); __c('[data-a="s4raw"]'); await __idle(); __c('[data-a="nextstep"][data-v="4"]'); __c('[data-a="sbrun"]'); await __idle(); __has('−$140/month');
-if (tt() !== '0|0|−$140 / month') throw new Error('S4 tiles ' + tt());
-// ---- 24_s5_regression
-preset('S5'); __c('[data-a="interpret"]'); await __idle(); __c('[data-a="confirm"]'); await __idle(); __c('[data-a="nextstep"][data-v="4"]'); __c('[data-a="sbrun"]'); await __idle();
-__has('12 regressions'); if (!document.querySelector('[data-a="nextstep"][data-v="5"]').classList.contains('dis') || tt().split('|')[0] !== '12' || !document.querySelector('#ttiles .kpi.alert')) throw new Error('S5 regressions block Submit');
-__c('[data-a="s5apply"]'); await __idle(); if (stepFlags().cur !== 4) throw new Error('the PM stays on Test');
-__c('[data-a="sbrun"]'); await __idle(); __has('No regressions · 2 cases change');
+preset('S4'); if (S.d.rule !== 'Manufacturer size') throw new Error('S4 opens Manufacturer size');
+__c('[data-a="interpret"]'); await __idle(); __c('[data-a="confirm"]'); await testDone(); __has('Circular dependency'); __has('Use raw input');
+__c('[data-a="s4raw"]'); await __until(() => S.d.variant === 'raw' && S.d.test && S.d.test.done && !busy());
+if (!S.d.test.pass || !S.d.test.s3.rows[3][2].includes('−$140 / month')) throw new Error('S4 raw input passes');
+// ---- 24_s5_unintended
+preset('S5'); __c('[data-a="interpret"]'); await __idle(); __c('[data-a="confirm"]'); await testDone();
+if (!S.d.test.hold || S.d.test.s2.totals.unint !== 12 || !document.querySelector('#sec3.lock')) throw new Error('S5: 12 unintended changes stop submit');
+__has('12 unintended changes stop submit');
+__c('[data-a="s5apply"]'); await __until(() => S.d.variant === 'narrow' && S.d.test && S.d.test.done && !busy());
+if (!S.d.test.pass || S.d.test.s2.totals.fixed !== 2) throw new Error('S5 narrow scope passes');
 // ---- 25_s6_blocked_ghost
 preset('S6'); __c('[data-a="interpret"]'); await __idle(); __has('This needs a normal release, not a rule change.');
-if (!document.querySelector('.stp.blk')) throw new Error('Describe blocked');
+if (!document.querySelector('#sec1.failed')) throw new Error('Define failed');
 __c('[data-a="raisecr"]'); __has('CR-0142 · New attribute: Cold-chain flag'); __has('Routed to: Admin for scoping');
-S.tower.tab = 'map'; S.map.view = 'coverage'; S.map.cat = 'Generics'; S.map.open = { 'Regulatory and handling': true }; render();
-if (![...document.querySelectorAll('#mapsvg text')].some(t => /Cold-chain flag · not in catalogue · CR-0142/.test(t.textContent))) throw new Error('ghost');
-openDraftView(S.d.rule); render();
-// ---- 26_s8_s9_s0
-preset('S8'); __c('[data-a="interpret"]'); await __idle(); __has('+ VL → Vial'); __c('[data-a="confirm"]'); await __idle(); __has('No duplicate key');
-preset('S9'); __c('[data-a="interpret"]'); await __idle(); __has('Blocked at model gateway'); __has('AUD-7781');
-if (document.querySelector('[data-a="openprop"]') || !document.querySelector('.stp.blk')) throw new Error('S9 must not create a proposal');
+// ---- 26_intake_guard_s8_s9_s0
+preset('S8'); __c('[data-a="interpret"]'); await __idle(); __has('+ VL → Vial'); __c('[data-a="confirm"]'); await testDone();
+if (!S.d.test.pass || !S.d.test.s1.rows[1].msg.includes('No duplicate key')) throw new Error('S8');
+preset('S9'); __c('[data-a="interpret"]'); await __idle(); __has('This looks like an instruction to the system, not a rule change. Nothing was run.'); __has('AUD-7781');
+if (S.d.phase !== 'idle' || S.d.sid || document.querySelector('[data-a="confirm"]') || !document.querySelector('#sec1.failed')) throw new Error('S9 must not run');
+__set('#rule-text', 'THIS AGREEMENT is entered into by and between the parties hereinafter referred to as Supplier and Buyer.'); __c('[data-a="interpret"]'); await __idle();
+__has('This looks like a document, not a rule change. Nothing was run.');
+__set('#pfield', 'MOQ'); __set('#rule-text', 'Manufacturer size should be the case quantity divided by the selling unit count.'); __c('[data-a="interpret"]'); await __idle();
+__has('This seems to be about Manufacturer size, not MOQ. Are you requesting a change to Manufacturer size?');
+__c('[data-a="guardswitch"]'); await __idle(); if (S.d.rule !== 'Manufacturer size' || S.d.sid !== 'S4') throw new Error('switch field re-interprets on the right field');
+__set('#pfield', 'MOQ'); __set('#rule-text', 'Use the MOQ from the supplier price list.'); __c('[data-a="interpret"]'); await __idle(); __c('[data-a="confirm"]'); await testDone();
+if (S.d.test.fail !== 1 || !S.d.test.s1.rows[0].msg.includes('price list is not extracted')) throw new Error('Data exists fails on the price list');
 preset('S0'); __c('[data-a="interpret"]'); await __idle(); __has("I couldn't map this to an attribute");
-// ---- 27_map_views
-S.tower.tab = 'map'; S.map.view = 'coverage'; S.map.cat = 'Generics'; S.map.open = {}; render();
-__has('34 attributes · 31 with live rules · 1 missing rule · 2 without golden cases · 1 without owner');
-__c('#mapsvg [data-a="mapgroup"][data-v="Packaging"]');
-if (![...document.querySelectorAll('#mapsvg text')].some(t => /Pallet Ti × Hi · Missing rule/.test(t.textContent))) throw new Error('missing rule node');
-__c('#mapsvg [data-a="mapnode"][data-v="moq"]'); if (S.tower.tab !== 'rules' || S.tower.sel !== 'MOQ') throw new Error('a map node opens its rule page');
-S.tower.tab = 'map'; render(); __c('#mapsvg [data-a="mapnode"][data-v="tihi"]'); if (S.tower.sel !== 'Pallet Ti × Hi') throw new Error('map node · no rule');
-S.tower.tab = 'map'; render();
-__set('select[data-c="mapcat"]', 'Masters'); __has('32 inherited from Generics'); __has('2 overridden'); __has('3 missing'); __has('Go with conditions');
-__set('select[data-c="mapcat"]', 'OTC'); __has('Discovery not started');
+// ---- 26b_seeded_draft
+setPersona('pm'); S.screen = 'tower'; S.tower.tab = 'proposals'; S.propView = null; render();
+if (!document.querySelector('#proptable tr[data-v="CP-0010"]').innerText.includes('Draft')) throw new Error('seeded draft');
+__c('#proptable tr[data-v="CP-0010"]'); if (S.propView !== 'new' || S.d.rule !== 'Shelf life' || S.d.pid !== 'CP-0010' || S.d.defined || !document.getElementById('interp')) throw new Error('the seeded draft reopens in Define, interpreted');
+if ([...document.querySelectorAll('#dfx li')].map(l => l.className || 'same').join(',') !== 'same,rew,same') throw new Error('shelf life diff');
+__c('[data-a="confirm"]'); await testDone(); if (!S.d.test.pass) throw new Error('shelf life passes');
+setPersona('admin'); S.screen = 'tower'; S.tower.tab = 'proposals'; S.propView = null; render();
+if (document.getElementById('createnew') || document.querySelectorAll('#proptable tr[data-v]').length !== S.props.length) throw new Error('Admin sees every proposal, read-only');
+setPersona('pm'); S.screen = 'tower'; render();
 // ---- 28_bounds_nav
 setPersona('admin');
 const items = BOUNDS.flatMap(c => c.items.map(i => i[1]));
@@ -622,23 +665,36 @@ __c('[data-a="spotoff"]'); S.director = false; render();
 // ---- 35_reset
 resetDemo(); __has('Item setup case queue'); __has('11 cases · sorted by SLA');
 if (qT() !== '6/3/2/17' || qRow('CASE-0092').status !== 'Needs action' || qRow('CASE-0097').status !== 'Digitizing' || qRow('CASE-0098').status !== 'Needs action' || Object.keys(S.syn).length) throw new Error('queue reset ' + JSON.stringify([qT(), qRow('CASE-0092').status, qRow('CASE-0097').status, qRow('CASE-0098').status, S.q97, Object.keys(S.syn)]));
-if (S.reg.MOQ.live !== '0.3' || S.traces.length || S.props.length !== 4 || S.access.length) throw new Error('reset');
+if (S.reg.MOQ.live !== '0.3' || S.traces.length || S.props.length !== 6 || S.access.length) throw new Error('reset');
+if (S.testCases.join() !== 'CASE-0048,CASE-0073,CASE-0076,CASE-0080,CASE-0085' || S.nextEp !== 42 || S.nextUnintended || S.d.rule || findProp('CP-0010').status !== 'draft' || findProp('CP-0007').status !== 'merged') throw new Error('reset v8 state');
 if (document.getElementById('login').classList.contains('hidden') || !document.getElementById('app').classList.contains('hidden')) throw new Error('reset returns to the landing page');
 enter('pm');
 // ---- 36_arrow_path_scripted
 S.speed = 'fast'; S.scriptedReview = true;
-for (let i = 0; i < 140 && !(S.screen === 'ops' && S.role === 'admin'); i++) { await __idle(); await __w(60); const p1 = S.props.find(x => x.sid === 'S1'); if (p1 && (!p1.checksDone || p1.reinterp)) { await __w(150); continue; } document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); await __w(120); }
+for (let i = 0; i < 160 && !(S.screen === 'ops' && S.role === 'admin'); i++) { await __idle(); await __w(60); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); await __w(120); }
 const s1 = S.props.find(x => x.sid === 'S1');
 if (S.screen !== 'ops' || S.role !== 'admin' || S.reg.MOQ.live !== '0.4' || S.cs.moqVersion !== '0.4' || !S.cs.approved) throw new Error('arrow path ended at ' + S.screen + ' as ' + S.role + ' live ' + S.reg.MOQ.live);
-if (!s1.events.some(e => e.who === 'Senior PM' && /illegible/.test(e.text)) || s1.lines.length !== 5) throw new Error('scripted review round');
+if (!s1.events.some(e => e.who === 'Senior PM' && /illegible/.test(e.text)) || s1.lines.length !== 6 || !s1.events.some(e => /re-sent for approval/.test(e.text))) throw new Error('scripted review round');
 if (s1.approvals.pm || s1.events.some(e => e.kind === 'approve' && e.who === 'Product Manager')) throw new Error('proposer approved');
 // ---- 37_fonts_overflow
 S.speed = 'normal';
 const small = [];
-const views = [['queue'], ['case', 'attrs'], ['case', 'audit'], ['tower', 'rules'], ['tower', 'proposals'], ['tower', 'overview'], ['tower', 'map'], ['ops'], ['bounds'], ['case98'], ['caseX', 'attrs']];
+const views = [['queue'], ['case', 'attrs'], ['case', 'audit'], ['tower', 'rules'], ['tower', 'proposals'], ['ops'], ['bounds'], ['case98'], ['caseX', 'attrs']];
 for (const [scr, tab] of views) {
   setPersona(scr === 'ops' ? 'admin' : 'pm'); S.screen = scr; if (scr === 'caseX') S.caseId = 'CASE-0088'; if (scr === 'case' || scr === 'caseX') S.caseTab = tab; if (scr === 'tower') { S.tower.tab = tab; S.propView = tab === 'proposals' ? 'CP-0014' : null; } render(); await __w(60);
   document.querySelectorAll('#app *').forEach(el => { if ([...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) { const fs = parseFloat(getComputedStyle(el).fontSize); if (fs < 10) small.push(scr + '/' + (tab || '') + ':' + el.tagName + ':' + fs + ':' + el.textContent.trim().slice(0, 20)); } });
   if (document.documentElement.scrollWidth > innerWidth + 1) small.push(scr + ': horizontal overflow ' + document.documentElement.scrollWidth);
 }
 if (small.length) throw new Error(small.slice(0, 8).join(' | '));
+// ---- 38_director_jumps_no_removed_tabs
+S.director = true; render();
+const jumps = [...document.querySelectorAll('.director .dgrid')].find(g => g.previousElementSibling && g.previousElementSibling.textContent === 'Jump to');
+const jk = [...jumps.querySelectorAll('[data-a="preset"]')].map(b => b.dataset.v);
+if (jk.some(k => /^map-|^overview$/.test(k)) || !jk.includes('rules') || !jk.includes('bounds')) throw new Error('director jumps ' + jk.join());
+for (const k of jk) {
+  S.modal = null; S.director = true; render(); __c(`.director [data-a="preset"][data-v="${k}"]`); await __idle();
+  if (S.screen === 'tower' && !TOWER_TABS.some(t => t[0] === S.tower.tab)) throw new Error(k + ' routes to tab ' + S.tower.tab);
+  if (document.querySelector('#mapsvg,#ov-kpis')) throw new Error(k + ' shows a removed tab');
+}
+preset('rules'); if (S.screen !== 'tower' || S.tower.tab !== 'rules') throw new Error('Open Rule Tower · Rules');
+resetDemo(); if (S.tower.tab !== 'rules' || S.tower.sel !== 'MOQ') throw new Error('reset lands on Rules');
